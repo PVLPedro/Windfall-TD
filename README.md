@@ -41,7 +41,7 @@ Repositório do Windfall TD, um jogo de Tower Defense desenvolvido como projeto 
 ## Rodando o projeto
 
 6. No mesmo Terminal aberto para instalar as dependências, ou num novo aberto na mesma pasta:
-- Execute o comando `nom run dev`.
+- Execute o comando `npm run dev`.
 - Após isso, abra o link localhost indicado pelo Terminal.
 - Não feche o Terminal enquanto estiver testando o jogo.
 - Envie seu feedback sobre o jogo para pvlprofissional@gmail.com. Sua experiência e opinião ajudam a tornar o jogo melhor.
