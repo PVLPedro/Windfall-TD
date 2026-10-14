@@ -1,0 +1,20 @@
+[
+    {
+        "at": 0,
+        "enemy": "goblin",
+        "count": 8,
+        "interval": 900
+    },
+    {
+        "at": 10,
+        "enemy": "orc",
+        "count": 3,
+        "interval": 2200
+    },
+    {
+        "at": 14,
+        "enemy": "goblin",
+        "count": 6,
+        "interval": 600
+    }
+]

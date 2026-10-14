@@ -1,0 +1,16 @@
+{
+    "goblin": {
+        "color": "0x6abf4b",
+        "radius": 12,
+        "hp": 40,
+        "speed": 90,
+        "gold": 5
+    },
+    "orc": {
+        "color": "0xc0532f",
+        "radius": 17,
+        "hp": 120,
+        "speed": 50,
+        "gold": 12
+    }
+}
