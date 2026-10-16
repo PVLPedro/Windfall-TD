@@ -1,153 +1,47 @@
-# Phaser Vite Template
+# Windfall-TD
+Repositório do Windfall TD, um jogo de Tower Defense desenvolvido como projeto pessoal. O objetivo: aplicar conceitos de JavaScript utilizando o framework/engine Phaser.
 
-This is a Phaser 4 project template that uses Vite for bundling. It supports hot-reloading for quick development workflow and includes scripts to generate production-ready builds.
+# Como jogar as versões Alphas (temporário)
 
-**[This Template is also available as a TypeScript version.](https://github.com/phaserjs/template-vite-ts)**
+## Node.js
 
-### Versions
+1. Instale o Node.js v24 em [Página de Download do Node.js](https://nodejs.org/pt-br/download).
+- Selecione a versão v24.21.0 LTS, baixe e execute o arquivo .msi e siga os passos padrões para concluir a instalação.
+- Para verificar a instalação, ao finalizar, abra o Windows PowerShell ou o Shell de seu sistema operacional e execute o comando:
+- `node -version`. Instalação bem sucedida caso retorne "v24.21.0" ou algo semelhante.
+- `npm -version`. Instalação bem sucedida caso retorne "11.19.0" ou algo semelhante.
 
-This template has been updated for:
+## Repositório
 
-- [Phaser 4.0.0](https://github.com/phaserjs/phaser)
-- [Vite 6.3.1](https://github.com/vitejs/vite)
+2. Opção 1: Instale o Git [Página de Download do Git](https://git-scm.com/install/windows).
+- Selecione a opção para o seu sistema operacional, como por exemplo (Git for Windows/x64 Setup), baixe e execute o arquivo .exe.
+- Para verificar a instalação, crie uma pasta em algum diretório de sua máquina. Então clique com o botão direito do mouse e selecione "Mostrar mais opções" (ou "Show more options). Se aparecer a opção "Open Git Bash here", a instalação foi bem sucedida.
+- Abra o Git Bash (usando o processo da etapa anteorior).
+- No terminal aberto, execute o comando (para colar comandos copiados no terminal do Git Bash, use o atalho "Shift + Insert"):
+- `git clone https://github.com/PVLPedro/Windfall-TD.git`.
 
-![screenshot](screenshot.png)
+3. Opção 2: Baixe o .zip do projeto.
+- Na tela inicial do repositório "Code", na opção "Code" ao lado de "About", selecione "Download ZIP".
+- Descompacte o arquivo na opção "Extrair tudo..." (ou "Extract all...").
+- Navegue até a pasta do repositório (como Windfall-TD-main ou Windfall-TD).
 
-## Requirements
+## Instale as dependências
 
-[Node.js](https://nodejs.org) is required to install dependencies and run scripts via `npm`.
+4. Dentro da pasta do repositório (Windfall-TD):
+- Abra o Terminal clicando com o botão direito do mouse e selecionando a opção "Abrir no Terminal" (ou "Open in Terminal).
+- Para instalar as dependências do projeto (Node.js), execute o comando: `npm install`. Caso apareça um erro em vermelho mencionando Execution Policy, feche o Terminal e avance para a etapa 5.
+- Caso o terminal aponte que há problemas de vulnerabilidade alta, execute o comando: `npm audit fix`.
+- Caso o terminal indique que há mais scripts requeridos, execute o comando `npm install-scripts approve --all`
+- Com tudo feito, avance para a etapa 6.
 
-## Available Commands
+5. Caso apareça um erro em vermelho mencionando Execution Policy:
+- Abra o Windows PowerShell e execute o comando: `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`
+- Para testar, feche o Shell e volte para a etapa 4.
 
-| Command | Description |
-|---------|-------------|
-| `npm install` | Install project dependencies |
-| `npm run dev` | Launch a development web server |
-| `npm run build` | Create a production build in the `dist` folder |
-| `npm run dev-nolog` | Launch a development web server without sending anonymous data (see "About log.js" below) |
-| `npm run build-nolog` | Create a production build in the `dist` folder without sending anonymous data (see "About log.js" below) |
+## Rodando o projeto
 
-
-## Writing Code
-
-After cloning the repo, run `npm install` from your project directory. Then, you can start the local development server by running `npm run dev`.
-
-The local development server runs on `http://localhost:8080` by default. Please see the Vite documentation if you wish to change this, or add SSL support.
-
-Once the server is running you can edit any of the files in the `src` folder. Vite will automatically recompile your code and then reload the browser.
-
-## Template Project Structure
-
-We have provided a default project structure to get you started. This is as follows:
-
-| Path                         | Description                                                |
-|------------------------------|------------------------------------------------------------|
-| `index.html`                 | A basic HTML page to contain the game.                     |
-| `public/assets`              | Game sprites, audio, etc. Served directly at runtime.      |
-| `public/style.css`           | Global layout styles.                                      |
-| `src/main.js`                | Application bootstrap.                                     |
-| `src/game`                   | Folder containing the game code.                           |
-| `src/game/main.js`           | Game entry point: configures and starts the game.          |
-| `src/game/scenes`            | Folder with all Phaser game scenes.                        | 
-
-## Handling Assets
-
-Vite supports loading assets via JavaScript module `import` statements.
-
-This template provides support for both embedding assets and also loading them from a static folder. To embed an asset, you can import it at the top of the JavaScript file you are using it in:
-
-```js
-import logoImg from './assets/logo.png'
-```
-
-To load static files such as audio files, videos, etc place them into the `public/assets` folder. Then you can use this path in the Loader calls within Phaser:
-
-```js
-preload ()
-{
-    //  This is an example of an imported bundled image.
-    //  Remember to import it at the top of this file
-    this.load.image('logo', logoImg);
-
-    //  This is an example of loading a static image
-    //  from the public/assets folder:
-    this.load.image('background', 'assets/bg.png');
-}
-```
-
-When you issue the `npm run build` command, all static assets are automatically copied to the `dist/assets` folder.
-
-## Deploying to Production
-
-After you run the `npm run build` command, your code will be built into a single bundle and saved to the `dist` folder, along with any other assets your project imported, or stored in the public assets folder.
-
-In order to deploy your game, you will need to upload *all* of the contents of the `dist` folder to a public facing web server.
-
-## Customizing the Template
-
-### Vite
-
-If you want to customize your build, such as adding plugin (i.e. for loading CSS or fonts), you can modify the `vite/config.*.mjs` file for cross-project changes, or you can modify and/or create new configuration files and target them in specific npm tasks inside of `package.json`. Please see the [Vite documentation](https://vitejs.dev/) for more information.
-
-## About log.js
-
-If you inspect our node scripts you will see there is a file called `log.js`. This file makes a single silent API call to a domain called `gryzor.co`. This domain is owned by Phaser Studio Inc. The domain name is a homage to one of our favorite retro games.
-
-We send the following 3 pieces of data to this API: The name of the template being used (vue, react, etc). If the build was 'dev' or 'prod' and finally the version of Phaser being used.
-
-At no point is any personal data collected or sent. We don't know about your project files, device, browser or anything else. Feel free to inspect the `log.js` file to confirm this.
-
-Why do we do this? Because being open source means we have no visible metrics about which of our templates are being used. We work hard to maintain a large and diverse set of templates for Phaser developers and this is our small anonymous way to determine if that work is actually paying off, or not. In short, it helps us ensure we're building the tools for you.
-
-However, if you don't want to send any data, you can use these commands instead:
-
-Dev:
-
-```bash
-npm run dev-nolog
-```
-
-Build:
-
-```bash
-npm run build-nolog
-```
-
-Or, to disable the log entirely, simply delete the file `log.js` and remove the call to it in the `scripts` section of `package.json`:
-
-Before:
-
-```json
-"scripts": {
-    "dev": "node log.js dev & dev-template-script",
-    "build": "node log.js build & build-template-script"
-},
-```
-
-After:
-
-```json
-"scripts": {
-    "dev": "dev-template-script",
-    "build": "build-template-script"
-},
-```
-
-Either of these will stop `log.js` from running. If you do decide to do this, please could you at least join our Discord and tell us which template you're using! Or send us a quick email. Either will be super-helpful, thank you.
-
-## Join the Phaser Community!
-
-We love to see what developers like you create with Phaser! It really motivates us to keep improving. So please join our community and show-off your work 😄
-
-**Visit:** The [Phaser website](https://phaser.io) and follow on [Phaser Twitter](https://twitter.com/phaser_)<br />
-**Play:** Some of the amazing games [#madewithphaser](https://twitter.com/search?q=%23madewithphaser&src=typed_query&f=live)<br />
-**Learn:** [API Docs](https://newdocs.phaser.io), [Support Forum](https://phaser.discourse.group/) and [StackOverflow](https://stackoverflow.com/questions/tagged/phaser-framework)<br />
-**Discord:** Join us on [Discord](https://discord.gg/phaser)<br />
-**Code:** 2000+ [Examples](https://labs.phaser.io)<br />
-**Read:** The [Phaser World](https://phaser.io/community/newsletter) Newsletter<br />
-
-Created by [Phaser Studio](mailto:support@phaser.io). Powered by coffee, anime, pixels and love.
-
-The Phaser logo and characters are &copy; 2011 - 2025 Phaser Studio Inc.
-
-All rights reserved.
+6. No mesmo Terminal aberto para instalar as dependências, ou num novo aberto na mesma pasta:
+- Execute o comando `npm run dev`.
+- Após isso, abra o link localhost indicado pelo Terminal.
+- Não feche o Terminal enquanto estiver testando o jogo.
+- Envie seu feedback sobre o jogo para pvlprofissional@gmail.com. Sua experiência e opinião ajudam a tornar o jogo melhor.
