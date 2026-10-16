@@ -129,8 +129,6 @@ export default class RunInfoDisplay extends Phaser.GameObjects.Container {
     }
 
     updateWaves(info) {
-
-        console.log(info);
         
         this.wavesText.setText(`${info.currentWave}/${info.totalWaves}`);
     }

@@ -64,7 +64,7 @@ export default class TowerContent {
         this.selectedTower = tower;
 
         this.description.setText(
-            `Dano: ${tower.damage.min} - ${tower.damage.max}\n` +
+            `${tower.damage ? 'Dano: ' + tower.damage.min + ' - ' + tower.damage.max : ''}\n` +
             `Alcance: ${tower.range}`
         );
 

@@ -1,42 +1,210 @@
 import * as Phaser from 'phaser';
 
-export default class Troop extends Phaser.GameObjects.Container {
-    constructor(scene, commandPoint) {
-        super(scene, commandPoint.x, commandPoint.y);
+const HEALTH_BAR_WIDTH = 30;
+
+export default class Troop extends Phaser.GameObjects.Arc {
+
+    constructor(scene, data, commandPoint) {
+
+        super(
+            scene,
+            commandPoint.x,
+            commandPoint.y,
+            data.size,
+            0,
+            360,
+            false,
+            data.color
+        );
+
+        this.scene = scene;
 
         this.commandPoint = commandPoint;
-        this.radius = commandPoint.detectionRange;
-        this.moveSpeed = 180;
+        this.actionRadius = commandPoint.detectionRange;
+        this.gamePath = commandPoint.gamePath;
+        this.tower = commandPoint.tower;
 
         this.state = 'idle';
         this.targetEnemy = null;
         this.interceptionTween = null;
 
+        this.health = data.health;
+        this.maxHealth = data.health;
+
+        this.speed = data.speed;
+        this.actualSpeed = data.speed;
+
+        this.meleeDamage = data.meleeDamage;
+        this.meleeCooldown = data.meleeCooldown;
+
+        this.attackTimer = 0;
+
+        this.rangedDamage = data.rangedDamage ?? null;
+        this.rangedCooldown = data.rangedCooldown ?? 0;
+        this.rangedRange = data.rangedRange ?? 0;
+        this.projectileSpeed = data.projectileSpeed ?? 240;
+
+        this.rangedAttackTimer = this.rangedCooldown * 800;
+
+        this.regeneration = data.regeneration ?? 0;
+        this.regenerationCooldown = data.regenerationCooldown;
+        this.passiveRegeneration = data.passiveRegeneration ?? false;
+        
+        this.regenerationTimer = 0;
+
         this.detectionArea = commandPoint.detectionArea;
 
-        this.body = scene.add.circle(
+        this.color = data.color;
+        this.size = data.size;
+
+        this.container = scene.add
+            .container(commandPoint.x, commandPoint.y + this.size * 2)
+            .setDepth(100);
+
+        this.healthBarBg = scene.add.rectangle(
             0,
-            0,
-            12,
-            0x3399ff
+            this.size / 2,
+            HEALTH_BAR_WIDTH,
+            5,
+            0x002200
         );
 
-        this.setSize(this.body.width, this.body.height);
+        this.healthBar = scene.add.rectangle(
+            0,
+            this.size / 2,
+            HEALTH_BAR_WIDTH,
+            5,
+            0x00aa00
+        );
 
-        this.body.setStrokeStyle(2, 0xffffff);
+        this.container.add([
+            this.healthBarBg,
+            this.healthBar
+        ]);
 
-        this.add(this.body);
+        this.rangeIndicator = null;
+
+        if (this.rangedDamage && this.rangedRange > 0) {
+            this.rangeIndicator = scene.add
+                .circle(
+                    this.x,
+                    this.y,
+                    this.rangedRange,
+                    this.color,
+                    0.04
+                )
+                .setStrokeStyle(2, this.color, 0.45)
+                .setDepth(this.y - 1);
+        };
+
+        this.commandPointMoveMode = false;
+
+        this.setInteractive(
+            new Phaser.Geom.Rectangle(0, 0, this.width, this.height),
+            Phaser.Geom.Rectangle.Contains
+        );
+
+        this.on('pointerdown', () => {
+            this.handleCommandPointMove();
+        });
 
         scene.add.existing(this);
 
-        this.setDepth(this.y);
-
         if (!commandPoint.setTroop(this)) {
             this.destroy();
-            throw new Error(
-                'Este ponto de comando já possui uma tropa.'
-            );
+            return;
         }
+    }
+
+    handleCommandPointMove() {
+        if (!this.active) return;
+
+        // Se já estiver ativo, o clique desativa o modo.
+        if (this.commandPointMoveMode) {
+            this.setCommandPointMoveMode(false);
+            return;
+        }
+
+        // Apenas uma tropa pode estar em modo de reposicionamento.
+        const previousTroop = this.scene.activeCommandPointMoveTroop;
+
+        if (previousTroop && previousTroop !== this) {
+            previousTroop.setCommandPointMoveMode(false);
+        }
+
+        this.setCommandPointMoveMode(true);
+    }
+
+    setCommandPointMoveMode(enabled) {
+        if (!this.active) return;
+
+        if (this.commandPointMoveMode === enabled) return;
+
+        this.commandPointMoveMode = enabled;
+
+        if (enabled) {
+            this.scene.activeCommandPointMoveTroop = this;
+
+            this.scene.input.on(
+                'pointerdown',
+                this.handleMovePointerDown,
+                this
+            );
+        } else {
+            this.scene.input.off(
+                'pointerdown',
+                this.handleMovePointerDown,
+                this
+            );
+
+            if (this.scene.activeCommandPointMoveTroop === this) {
+                this.scene.activeCommandPointMoveTroop = null;
+            }
+        }
+    }
+
+    handleMovePointerDown(pointer) {
+        if (!this.active || !this.commandPointMoveMode) return;
+
+        // Não interpretar cliques em outras tropas como destinos.
+        const clickedTroop = this.scene.troops.some(troop => {
+            if (!troop.active) return false;
+
+            const bounds = troop.getBounds();
+
+            return bounds.contains(pointer.worldX, pointer.worldY);
+        });
+
+        if (clickedTroop) return;
+
+        // Verifica se o clique está dentro da área do caminho.
+        const isOnPath = this.gamePath.containsPoint(
+            pointer.worldX,
+            pointer.worldY
+        );
+
+        // Verifica se o destino está dentro do alcance da torre.
+        const distance = Phaser.Math.Distance.Between(
+            this.tower.positionX,
+            this.tower.positionY,
+            pointer.worldX,
+            pointer.worldY
+        );
+
+        const isWithinTowerRange =
+            distance <= this.tower.range;
+
+        // O modo termina após a tentativa, mesmo se o destino for inválido.
+        this.setCommandPointMoveMode(false);
+
+        if (!isOnPath || !isWithinTowerRange) {
+            return;
+        }
+
+        const moved = this.commandPoint.moveCommandPoint(
+            pointer.worldX,
+            pointer.worldY
+        );
     }
 
     findTarget(enemies) {
@@ -61,7 +229,7 @@ export default class Troop extends Phaser.GameObjects.Container {
             );
 
             if (
-                distance <= this.radius &&
+                distance <= this.actionRadius &&
                 distance < closestDistance
             ) {
                 closestEnemy = enemy;
@@ -72,7 +240,12 @@ export default class Troop extends Phaser.GameObjects.Container {
         return closestEnemy;
     }
 
-    update(enemies) {
+    update(enemies, delta) {
+
+        if (!this.active) return;
+
+        this.regenerate(delta);
+
         if (this.targetEnemy) {
             const enemy = this.targetEnemy;
 
@@ -87,7 +260,11 @@ export default class Troop extends Phaser.GameObjects.Container {
             }
         }
 
-        if (!this.targetEnemy && this.state === 'idle') {
+        if (
+            this.meleeDamage &&
+            !this.targetEnemy &&
+            this.state === 'idle'
+        ) {
             const enemy = this.findTarget(enemies);
 
             if (enemy && enemy.reserveTroop(this)) {
@@ -96,9 +273,113 @@ export default class Troop extends Phaser.GameObjects.Container {
             }
         }
 
+        if (this.state === 'blocking' && this.targetEnemy?.active) {
+            this.updateCombat(delta);
+        }
+
+        if (this.state === 'idle' && this.rangedDamage) {
+            this.updateRangedCombat(enemies, delta);
+        }
+
         this.setDepth(this.y);
 
         this.updateVisuals();
+
+        if (this.container && this.active) {
+            this.container.setPosition(this.x, this.y + this.size * 2);
+        }
+
+        if (this.rangeIndicator) {
+            this.rangeIndicator
+                .setPosition(this.x, this.y)
+                .setDepth(this.y - 1);
+        }
+    }
+
+    updateRangedCombat(enemies, delta) {
+        if (
+            !this.active ||
+            !this.rangedDamage ||
+            this.rangedRange <= 0 ||
+            this.rangedCooldown <= 0
+        ) {
+            return;
+        }
+
+        let target = null;
+        let closestDistance = Infinity;
+
+        for (const enemy of enemies) {
+            if (!enemy.active) continue;
+
+            const distance = Phaser.Math.Distance.Between(
+                this.x,
+                this.y,
+                enemy.x,
+                enemy.y
+            );
+
+            if (
+                distance <= this.rangedRange &&
+                distance < closestDistance
+            ) {
+                target = enemy;
+                closestDistance = distance;
+            }
+        }
+
+        if (!target) {
+            // this.rangedAttackTimer = 0;
+            return;
+        }
+
+        this.rangedAttackTimer += delta;
+
+        const cooldown = this.rangedCooldown * 1000;
+
+        if (this.rangedAttackTimer < cooldown) return;
+
+        this.rangedAttackTimer -= cooldown;
+
+        this.scene.projectileManager.spawn('basic', {
+            x: this.x,
+            y: this.y,
+            target,
+            damage: this.rangedDamage,
+            speed: this.projectileSpeed,
+        });
+    }
+
+    updateCombat(delta) {
+
+        const enemy = this.targetEnemy;
+
+        if (
+            !this.active ||
+            this.state !== 'blocking' ||
+            !enemy?.active ||
+            !enemy.isBlocked ||
+            enemy.blockingTroop !== this
+        ) {
+            return;
+        }
+
+        this.attackTimer += delta;
+
+        const cooldown = this.meleeCooldown * 1000;
+
+        if (!Number.isFinite(cooldown) || cooldown <= 0) {
+            return;
+        }
+
+        if (this.attackTimer < cooldown) return;
+
+        this.attackTimer -= cooldown;
+
+        this.scene.combatSystem.dealDamage(
+            enemy,
+            this.meleeDamage
+        );
     }
 
     moveToTarget(enemy) {
@@ -125,7 +406,7 @@ export default class Troop extends Phaser.GameObjects.Container {
 
         const duration = Math.max(
             1,
-            (distance / this.moveSpeed) * 1000
+            (distance / this.speed) * 1000
         );
 
         this.interceptionTween = this.scene.tweens.add({
@@ -155,6 +436,46 @@ export default class Troop extends Phaser.GameObjects.Container {
 
                 this.setDepth(this.y);
                 this.updateVisuals();
+            }
+        });
+    }
+
+    takeDamage(amount) {
+        if (!this.active) return;
+
+        this.health -= amount;
+        this.updateHealthBar();
+
+        if (this.health <= 0) {
+
+            this.health = 0;
+            this.isDead = true;
+
+            this.updateVisuals();
+
+            this.destroy();
+            return;
+        }
+
+        this.flashDamage();
+    }
+
+    updateHealthBar() {
+        const percentage = Phaser.Math.Clamp(
+            this.health / this.maxHealth,
+            0,
+            1
+        );
+
+        this.healthBar.width = HEALTH_BAR_WIDTH * percentage;
+    }
+    
+    flashDamage() {
+        this.setFillStyle(0xffffff);
+
+        this.scene.time.delayedCall(100, () => {
+            if (this.active) {
+                this.setFillStyle(this.color);
             }
         });
     }
@@ -210,7 +531,7 @@ export default class Troop extends Phaser.GameObjects.Container {
 
         const duration = Math.max(
             1,
-            (distance / this.moveSpeed) * 1000
+            (distance / this.speed) * 1000
         );
 
         this.interceptionTween = this.scene.tweens.add({
@@ -238,33 +559,74 @@ export default class Troop extends Phaser.GameObjects.Container {
         this.updateVisuals();
     }
 
+    regenerate(delta) {
+        if (
+            !this.active ||
+            this.regeneration <= 0 ||
+            this.health >= this.maxHealth
+        ) {
+            return;
+        }
+        
+        if (!this.passiveRegeneration) {
+
+            if (this.state !== 'idle') return;
+        }
+        
+        this.regenerationTimer += delta;
+        
+        const cooldown = this.regenerationCooldown * 1000;
+        
+        if (!Number.isFinite(cooldown) || cooldown <= 0) {
+            return;
+        }
+        
+        if (this.regenerationTimer < cooldown) return;
+        
+        this.regenerationTimer -= cooldown;
+        
+        this.health = Math.min(
+            this.maxHealth,
+            this.health + this.regeneration
+        );
+
+        this.updateHealthBar();
+    }
+
     updateVisuals() {
         if (this.state === 'idle') {
-            this.detectionArea.setFillStyle(0x00aaff, 0.15);
-            this.detectionArea.setStrokeStyle(2, 0x00aaff, 0.8);
+            this.detectionArea.setFillStyle(0x00aaff, 0.03);
+            this.detectionArea.setStrokeStyle(2, 0x00aaff, 0.3);
             return;
         }
 
         if (this.state === 'intercepting') {
-            this.detectionArea.setFillStyle(0xffaa00, 0.2);
-            this.detectionArea.setStrokeStyle(2, 0xffaa00, 1);
+            this.detectionArea.setFillStyle(0xffaa00, 0.03);
+            this.detectionArea.setStrokeStyle(2, 0xffaa00, 0.3);
             return;
         }
         
         if (this.state === 'returning') {
-            this.detectionArea.setFillStyle(0x33cc66, 0.15);
-            this.detectionArea.setStrokeStyle(2, 0x33cc66, 0.8);
+            this.detectionArea.setFillStyle(0x33cc66, 0.03);
+            this.detectionArea.setStrokeStyle(2, 0x33cc66, 0.3);
             return;
         }
 
         if (this.state === 'blocking') {
-            this.detectionArea.setFillStyle(0xff4444, 0.2);
-            this.detectionArea.setStrokeStyle(2, 0xff4444, 1);
+            this.detectionArea.setFillStyle(0xff4444, 0.03);
+            this.detectionArea.setStrokeStyle(2, 0xff4444, 0.3);
+        }
+
+        if (this.health === 0) {
+            this.detectionArea.setFillStyle(0x223344, 0.03);
+            this.detectionArea.setStrokeStyle(2, 0x223344, 0.3);
         }
     }
 
     destroy(fromScene) {
+
         if (this.interceptionTween) {
+
             this.interceptionTween.stop();
             this.interceptionTween = null;
         }
@@ -276,9 +638,35 @@ export default class Troop extends Phaser.GameObjects.Container {
             enemy.releaseTroop(this);
         }
 
+        if (this.isDead && this.commandPoint) {
+            this.commandPoint.handleTroopDeath(this);
+        }
+
         if (this.commandPoint?.troop === this) {
             this.commandPoint.troop = null;
         }
+
+        const troops = this.scene?.troops;
+
+        if (troops) {
+            const index = troops.indexOf(this);
+
+            if (index !== -1) {
+                troops.splice(index, 1);
+            }
+        }
+
+        if (this.container) {
+            this.container.destroy();
+            this.container = null;
+        }
+
+        if (this.rangeIndicator) {
+            this.rangeIndicator.destroy();
+            this.rangeIndicator = null;
+        }
+
+        this.setCommandPointMoveMode(false);
 
         super.destroy(fromScene);
     }

@@ -8,13 +8,12 @@ import ProjectileManager from '../systems/ProjectileManager';
 import TowerManager from '../systems/TowerManager';
 import CombatSystem from '../systems/CombatSystem';
 import GamePath from '../paths/GamePath';
-import Troop from '../entities/Troop';
 import CommandPoint from '../entities/CommandPoint';
 
 import { waves } from '../data/waves';
+import { troopTypes } from '../data/troops';
 // import { slots } from '../data/levels';
 import { slotSpecs, generateSlots } from '../data/levels';
-import { drawPath } from '../utils/drawPath';
 import { createPathBoundsPolygon } from '../utils/createPathBoundsPolygon';
 import { buildRoundedPath } from '../utils/buildRoundedPath';
 
@@ -103,43 +102,34 @@ export default class GameScene extends Phaser.Scene {
         console.log('Linha 0:', laneB);
         console.log('Linha 1:', laneC);
 
-        this.avaliableTroops = 4;
+        this.availableTroopsOfType = {
+            soldier: 4,
+            archer: 3
+        };
+
+        this.currentTroopType = troopTypes.soldier; 
 
         this.commandPoints = [];
         this.troops = [];
 
-        this.gamePath.on('pointerdown', pointer => {
+        // this.gamePath.on('pointerdown', pointer => {
+            
+        //     const currentTypeKey = this.currentTroopType.id; 
 
-            if (this.avaliableTroops > 0) {
+        //     if (this.availableTroopsOfType[currentTypeKey] > 0) {
 
-                const commandPoint = new CommandPoint(
-                    this,
-                    pointer.worldX,
-                    pointer.worldY,
-                    80
-                );
+        //         const commandPoint = new CommandPoint(
+        //             this,
+        //             this.currentTroopType,
+        //             pointer.worldX,
+        //             pointer.worldY,
+        //         );
 
-                const troop = new Troop(this, commandPoint);
+        //         this.commandPoints.push(commandPoint);
 
-                this.commandPoints.push(commandPoint);
-                this.troops.push(troop);
-
-                troop.setInteractive(
-                    new Phaser.Geom.Rectangle(0, 0, troop.width, troop.height), 
-                    Phaser.Geom.Rectangle.Contains
-                );
-                
-                troop.on('pointerdown', () => {
-
-                    troop.destroy();
-                    commandPoint.destroy();
-
-                    ++this.avaliableTroops;
-                })
-
-                --this.avaliableTroops;
-            }
-        });
+        //         this.availableTroopsOfType[currentTypeKey]--;
+        //     }
+        // });
 
         // Debug: marca os pontos de virada
         // const DEBUG_PATH = true;
@@ -238,7 +228,10 @@ export default class GameScene extends Phaser.Scene {
         const enemies = this.waveManager.enemySpawner.enemies;
 
         this.troops.forEach(troop => {
-            troop.update(enemies);
+            troop.update(
+                this.waveManager.enemySpawner.enemies,
+                delta
+            );
         });
     }
 }

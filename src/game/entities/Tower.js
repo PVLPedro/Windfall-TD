@@ -1,5 +1,8 @@
 import * as Phaser from 'phaser';
 
+import { troopTypes } from '../data/troops';
+import CommandPoint from './CommandPoint';
+
 export default class Tower extends Phaser.GameObjects.Rectangle {
 
     constructor(
@@ -20,6 +23,9 @@ export default class Tower extends Phaser.GameObjects.Rectangle {
             data.color
         );
 
+        this.positionX = x;
+        this.positionY = y;
+
         this.scene = scene;
 
         this.type = data.type;
@@ -35,13 +41,18 @@ export default class Tower extends Phaser.GameObjects.Rectangle {
         this.cost = data.cost;
         this.range = data.range;
         this.damage = data.damage;
-        this.attackCooldown = data.attackCooldown;
+        this.attackCooldown = data.attackCooldown ?? 1;
 
-        this.debuff = data.debuff;
+        this.debuff = data.debuff ?? false;
 
-        this.projectileType = data.projectileType;
-        this.projectileSpeed = data.projectileSpeed;
-        this.explosionRadius = data.explosionRadius;
+        this.projectileType = data.projectileType ?? 'basic';
+        this.projectileSpeed = data.projectileSpeed ?? 120;
+        this.explosionRadius = data.explosionRadius ?? 0;
+
+        this.troops = data.troops ?? false;
+        this.commandPoints = [];
+
+        this.spawnTroops();
 
         this.target = null;
 
@@ -52,8 +63,10 @@ export default class Tower extends Phaser.GameObjects.Rectangle {
             y,
             this.range,
             this.color,
-            0.1
+            0.03
         );
+
+        this.rangeCircle.setStrokeStyle(2, this.color, 0.3);
 
         this.iconCircle = scene.add.circle(
             x,
@@ -132,6 +145,29 @@ export default class Tower extends Phaser.GameObjects.Rectangle {
         });
     }
 
+    spawnTroops() {
+
+        if (!this.active || !this.troops) return;
+        
+        const totalTroops = this.troops.length || 1;
+        const intervaloX = 30;
+
+        this.troops.forEach((troop, index) => {
+            const deslocamentoX = (index - (totalTroops - 1) / 2) * intervaloX;
+            
+            const commandPoint = new CommandPoint(
+                this.scene,
+                this.scene.gamePath,
+                this,
+                troop,
+                this.x + deslocamentoX,
+                this.y + 30,
+            );
+
+            this.commandPoints.push(commandPoint);
+        });
+    }
+
     attack() {
 
         if (!this.active) return;
@@ -168,6 +204,10 @@ export default class Tower extends Phaser.GameObjects.Rectangle {
             this.towerName.destroy();
             this.detail.destroy();
         }
+
+        this.commandPoints.forEach(commandPoint => {
+            commandPoint.destroy();
+        })
 
         super.destroy();
     }

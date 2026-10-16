@@ -1,10 +1,13 @@
 import * as Phaser from 'phaser';
+import CombatSystem from '../systems/CombatSystem';
 import { GameEvents } from '../constants/events';
 
 const HEALTH_BAR_WIDTH = 30;
 
 export default class Enemy extends Phaser.GameObjects.Arc {
+
     constructor(scene, gamePath, data, lane = 0, laneSpacing = 12) {
+
         const start = gamePath.getLanePosition(0, lane, laneSpacing);
 
         super(
@@ -17,6 +20,8 @@ export default class Enemy extends Phaser.GameObjects.Arc {
             false,
             data.color
         );
+
+        this.scene = scene;
 
         this.gamePath = gamePath;
         this.pathLength = gamePath.getLength();
@@ -34,7 +39,18 @@ export default class Enemy extends Phaser.GameObjects.Arc {
         this.speed = data.speed;
         this.actualSpeed = data.speed;
 
-        this.damage = data.damage;
+        this.meleeDamage = data.meleeDamage;
+        this.meleeCooldown = data.meleeCooldown;
+
+        this.attackTimer = 0;
+
+        this.rangedDamage = data.rangedDamage ?? null;
+        this.rangedCooldown = data.rangedCooldown ?? 0;
+        this.rangedRange = data.rangedRange ?? 0;
+        this.projectileSpeed = data.projectileSpeed ?? 240;
+
+        this.rangedAttackTimer = this.rangedCooldown * 800;
+
         this.lifes = data.lifes;
         this.reward = data.reward;
 
@@ -73,6 +89,21 @@ export default class Enemy extends Phaser.GameObjects.Arc {
             this.healthBar
         ]);
 
+        this.rangeIndicator = null;
+
+        if (this.rangedDamage && this.rangedRange > 0) {
+            this.rangeIndicator = scene.add
+                .circle(
+                    this.x,
+                    this.y,
+                    this.rangedRange,
+                    this.color,
+                    0.04
+                )
+                .setStrokeStyle(2, this.color, 0.45)
+                .setDepth(this.y - 1);
+        }
+
         scene.add.existing(this);
     }
 
@@ -80,14 +111,25 @@ export default class Enemy extends Phaser.GameObjects.Arc {
         if (!this.active) return;
 
         if (this.reservedBy) {
-            if (this.reservedBy.active) {
+
+            if (!this.reservedBy.active) {
+
+                this.releaseTroop(this.reservedBy);
+            }
+            else {
+
+                if (this.isBlocked && this.blockingTroop) {
+
+                    this.updateCombat(delta);
+                }
+
                 return;
             }
-
-            this.releaseTroop(this.reservedBy);
         }
 
         if (this.isBlocked) return;
+
+        if (this.updateRangedCombat(delta)) return;
 
         this.pathDistance += this.speed * (delta / 1000);
 
@@ -109,6 +151,12 @@ export default class Enemy extends Phaser.GameObjects.Arc {
         this.container
             .setPosition(point.x, point.y - this.size * 2)
             .setDepth(point.y);
+
+        if (this.rangeIndicator) {
+            this.rangeIndicator
+                .setPosition(this.x, this.y)
+                .setDepth(this.y - 1);
+        }
     }
 
     takeDamage(amount) {
@@ -194,6 +242,86 @@ export default class Enemy extends Phaser.GameObjects.Arc {
         return true;
     }
 
+    updateRangedCombat(delta) {
+        if (
+            !this.active ||
+            !this.rangedDamage ||
+            this.rangedRange <= 0 ||
+            this.rangedCooldown <= 0
+        ) {
+            return false;
+        }
+
+        const troops = this.scene.troops ?? [];
+
+        let target = null;
+        let closestDistance = Infinity;
+
+        for (const troop of troops) {
+            if (!troop.active) continue;
+
+            const distance = Phaser.Math.Distance.Between(
+                this.x,
+                this.y,
+                troop.x,
+                troop.y
+            );
+
+            if (
+                distance <= this.rangedRange &&
+                distance < closestDistance
+            ) {
+                target = troop;
+                closestDistance = distance;
+            }
+        }
+
+        if (!target) {
+            // this.rangedAttackTimer = 0;
+            return false;
+        }
+
+        this.rangedAttackTimer += delta;
+
+        const cooldown = this.rangedCooldown * 1000;
+
+        if (this.rangedAttackTimer >= cooldown) {
+            this.rangedAttackTimer -= cooldown;
+
+            this.scene.projectileManager.spawn('basic', {
+                x: this.x,
+                y: this.y,
+                target,
+                damage: this.rangedDamage,
+                speed: this.projectileSpeed,
+            });
+        }
+
+        return true;
+    }
+
+    updateCombat(delta) {
+
+        if (!this.active || !this.blockingTroop?.active) return;
+
+        this.attackTimer += delta;
+
+        const cooldown = this.meleeCooldown * 1000;
+
+        if (!Number.isFinite(cooldown) || cooldown <= 0) {
+            return;
+        }
+
+        if (this.attackTimer < cooldown) return;
+
+        this.attackTimer -= cooldown;
+
+        this.scene.combatSystem.dealDamage(
+            this.blockingTroop,
+            this.meleeDamage
+        );
+    }
+
     destroy(fromScene) {
         if (this.reservedBy) {
             const troop = this.reservedBy;
@@ -212,6 +340,11 @@ export default class Enemy extends Phaser.GameObjects.Arc {
         if (this.container) {
             this.container.destroy();
             this.container = null;
+        }
+
+        if (this.rangeIndicator) {
+            this.rangeIndicator.destroy();
+            this.rangeIndicator = null;
         }
 
         super.destroy(fromScene);

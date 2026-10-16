@@ -63,7 +63,7 @@ export default class EntityContent {
             `${entity.name} \n` +
             `${entity.health} / ${entity.maxHealth} \n` +
             `${entity.speed} \n` +
-            `${entity.damage.min}-${entity.damage.max}\n` +
+            `${entity.meleeDamage?.min}-${entity.meleeDamage?.max}\n` +
             `${entity.lifes} \n` +
             `${entity.reward} \n` +
             ``

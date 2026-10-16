@@ -71,8 +71,6 @@ export default class WaveOptions {
         const info = this.waveManager.getWavesInfo();
 
         if (!info || info.currentWave >= info.totalWaves) {
-
-            console.log(info);
             
             return;
         }

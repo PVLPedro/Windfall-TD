@@ -157,7 +157,7 @@ export default class SlotContent {
 
         this.feedback.setText(
             `${towerType.name} selecionada.\n` +
-            `Dano: ${towerType.damage.min} - ${towerType.damage.max}\n` +
+            `${towerType.damage ? 'Dano: ' + towerType.damage.min + ' - ' + towerType.damage.max : ''}\n` +
             `Alcance: ${towerType.range}`
         );
     }

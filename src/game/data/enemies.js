@@ -5,10 +5,14 @@ export const enemyTypes = {
 
         health: 30,
         speed: 60,
-        damage: {
+
+        meleeDamage: {
             min: 2,
-            max: 4
+            max: 4,
         },
+
+        meleeCooldown: 1,
+
         lifes: 1,
         reward: 5,
         size: 12,
@@ -16,15 +20,47 @@ export const enemyTypes = {
         // blockable: false,
     },
 
+    goblinArcher: {
+        name: 'Goblin Arqueiro',
+
+        health: 25,
+        speed: 60,
+
+        meleeDamage: {
+            min: 1,
+            max: 3,
+        },
+
+        meleeCooldown: 1.5,
+
+        rangedDamage: {
+            min: 4,
+            max: 7,
+        },
+
+        rangedCooldown: 1.5,
+        rangedRange: 100,
+        projectileSpeed: 240,
+
+        lifes: 1,
+        reward: 8,
+        size: 12,
+        color: 0x55AA22,
+    },
+
     orc: {
         name: 'Orc',
 
         health: 80,
         speed: 45,
-        damage: {
+
+        meleeDamage: {
             min: 10,
-            max: 14
+            max: 14,
         },
+
+        meleeCooldown: 1,
+
         lifes: 1,
         reward: 9,
         size: 18,
@@ -36,10 +72,14 @@ export const enemyTypes = {
 
         health: 20,
         speed: 90,
-        damage: {
-            min: 2,
-            max: 5
+
+        meleeDamage: {
+            min: 1,
+            max: 3,
         },
+
+        meleeCooldown: 0.8,
+
         lifes: 1,
         reward: 6,
         size: 10,
@@ -51,10 +91,14 @@ export const enemyTypes = {
 
         health: 200,
         speed: 33,
-        damage: {
+
+        meleeDamage: {
             min: 20,
-            max: 40
+            max: 40,
         },
+
+        meleeCooldown: 1.5,
+        
         lifes: 3,
         reward: 25,
         size: 25,

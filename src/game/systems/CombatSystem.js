@@ -2,10 +2,11 @@ import * as Phaser from 'phaser';
 
 export default class CombatSystem {
 
-    constructor(scene, enemies) {
+    constructor(scene, enemies = [], troops = []) {
 
         this.scene = scene;
         this.enemies = enemies;
+        this.troops = troops;
     }
 
     rollDamage(damage) {
@@ -25,7 +26,7 @@ export default class CombatSystem {
         target.takeDamage(amount);
     }
 
-    dealDamage(target, damage, debuff) {
+    dealDamage(target, damage, debuff = null) {
 
         if (!target || !target.active) {
             return;
@@ -39,11 +40,9 @@ export default class CombatSystem {
         );
     }
 
-    dealAreaDamage(x, y, radius, damage, debuff) {
+    dealAreaDamage(x, y, radius, damage, debuff = null) {
 
         const baseDamage = this.rollDamage(damage);
-
-        // console.log(debuff);
 
         this.enemies.forEach(enemy => {
 

@@ -1,3 +1,5 @@
+import { troopTypes } from "./troops";
+
 export const towerTypes = {
 
     archer: {
@@ -89,33 +91,39 @@ export const towerTypes = {
         color: 0xFFE52F
     },
 
-    // resistence: {
-    //     name: 'Torre Resistência',
-    //     icon: 'resistence',
+    resistence: {
+        name: 'Torre Resistência',
+        icon: 'resistence',
 
-    //     cost: 110,
-    //     damage: {
-    //         min: 10,
-    //         max: 13,
-    //         falloff: {
-    //             minimum: 0.4,
-    //         },
-    //     },
-    //     debuff: {
-    //         type: 'slow',
-    //         value: 50,
-    //         duration: 1,
-    //     },
-    //     range: 130,
-    //     attackCooldown: 1500,
-
-    //     projectileType: 'bomb',
-    //     projectileSpeed: 400,
-    //     explosionRadius: 60,
+        cost: 80,
+        // damage: {
+        //     min: 10,
+        //     max: 13,
+        //     falloff: {
+        //         minimum: 0.4,
+        //     },
+        // },
+        // debuff: {
+        //     type: 'slow',
+        //     value: 50,
+        //     duration: 1,
+        // },
+        // attackCooldown: 1500,
+        // projectileType: 'bomb',
+        // projectileSpeed: 400,
+        // explosionRadius: 60,
         
-    //     size: 50,
-    //     color: 0x662D91
-    // },
+        range: 120,
+
+        troops: [
+            troopTypes.soldier,
+            troopTypes.soldier,
+            troopTypes.archer
+        ],
+        
+        size: 50,
+        color: 0x662D91
+    },
 
     // mad: {
     //     name: 'Torre Fronteira',

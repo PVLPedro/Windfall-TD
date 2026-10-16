@@ -179,22 +179,22 @@ export const waves = [
 
             {
                 type: enemyTypes.orc,
-                count: 10,
-                interval: 1.5,
+                count: 2,
+                interval: 0.5,
                 defaultLane: 2,
             },
 
             {
-                type: enemyTypes.orc,
-                count: 15,
-                interval: 1.5,
+                type: enemyTypes.goblinArcher,
+                count: 2,
+                interval: 0.5,
                 defaultLane: 2,
             }
 
         ],
 
-        groupInterval: 2.5,
-        repeats: 1,
+        groupInterval: 1,
+        repeats: 7,
         nextWaveDelay: 10
     },
 

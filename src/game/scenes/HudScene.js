@@ -6,6 +6,8 @@ import RunInfoDisplay from '../ui/RunInfoDisplay';
 import SelectionPanel from '../ui/SelectionPanel';
 import WaveOptions from '../ui/WaveOptions';
 
+import { troopTypes } from '../data/troops';
+
 export default class HudScene extends Phaser.Scene {
 
     constructor() {
@@ -47,36 +49,6 @@ export default class HudScene extends Phaser.Scene {
             'FASE 1',
             {
                 fontSize: '32px',
-                color: '#ffffff'
-            }
-        ).setOrigin(0.5);
-
-        this.avaliableTroops = this.add.text(
-            centerX,
-            80,
-            `Tropas disponíveis ${this.gameScene.avaliableTroops}`,
-            {
-                fontSize: '24px',
-                color: '#ffffff'
-            }
-        ).setOrigin(0.5);
-
-        this.troopsPositionInfo = this.add.text(
-            centerX,
-            100,
-            `Clique no caminho para posicionar`,
-            {
-                fontSize: '20px',
-                color: '#ffffff'
-            }
-        ).setOrigin(0.5);
-
-        this.troopsRepositionInfo = this.add.text(
-            centerX,
-            120,
-            `Clique nelas para reposicionar`,
-            {
-                fontSize: '20px',
                 color: '#ffffff'
             }
         ).setOrigin(0.5);
@@ -154,9 +126,5 @@ export default class HudScene extends Phaser.Scene {
         this.selectionPanel.update();
 
         this.waveOptions.update();
-
-        this.avaliableTroops.setText(
-            `Tropas disponíveis ${this.gameScene.avaliableTroops}`
-        )
     }
 }
