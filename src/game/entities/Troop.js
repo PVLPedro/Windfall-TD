@@ -1,5 +1,7 @@
 import * as Phaser from 'phaser';
 
+import { QUAD } from '../constants/units';
+
 const HEALTH_BAR_WIDTH = 30;
 
 export default class Troop extends Phaser.GameObjects.Arc {
@@ -31,8 +33,9 @@ export default class Troop extends Phaser.GameObjects.Arc {
         this.health = data.health;
         this.maxHealth = data.health;
 
-        this.speed = data.speed;
-        this.actualSpeed = data.speed;
+        // Velocidades e alcances vêm em quadrados e são convertidos para pixels aqui.
+        this.speed = data.speed * QUAD;
+        this.actualSpeed = data.speed * QUAD;
 
         this.meleeDamage = data.meleeDamage;
         this.meleeCooldown = data.meleeCooldown;
@@ -41,8 +44,8 @@ export default class Troop extends Phaser.GameObjects.Arc {
 
         this.rangedDamage = data.rangedDamage ?? null;
         this.rangedCooldown = data.rangedCooldown ?? 0;
-        this.rangedRange = data.rangedRange ?? 0;
-        this.projectileSpeed = data.projectileSpeed ?? 240;
+        this.rangedRange = (data.rangedRange ?? 0) * QUAD;
+        this.projectileSpeed = (data.projectileSpeed ?? 60) * QUAD;
 
         this.rangedAttackTimer = this.rangedCooldown * 800;
 
@@ -119,13 +122,11 @@ export default class Troop extends Phaser.GameObjects.Arc {
     handleCommandPointMove() {
         if (!this.active) return;
 
-        // Se já estiver ativo, o clique desativa o modo.
         if (this.commandPointMoveMode) {
             this.setCommandPointMoveMode(false);
             return;
         }
 
-        // Apenas uma tropa pode estar em modo de reposicionamento.
         const previousTroop = this.scene.activeCommandPointMoveTroop;
 
         if (previousTroop && previousTroop !== this) {
@@ -166,7 +167,6 @@ export default class Troop extends Phaser.GameObjects.Arc {
     handleMovePointerDown(pointer) {
         if (!this.active || !this.commandPointMoveMode) return;
 
-        // Não interpretar cliques em outras tropas como destinos.
         const clickedTroop = this.scene.troops.some(troop => {
             if (!troop.active) return false;
 
@@ -177,13 +177,11 @@ export default class Troop extends Phaser.GameObjects.Arc {
 
         if (clickedTroop) return;
 
-        // Verifica se o clique está dentro da área do caminho.
         const isOnPath = this.gamePath.containsPoint(
             pointer.worldX,
             pointer.worldY
         );
 
-        // Verifica se o destino está dentro do alcance da torre.
         const distance = Phaser.Math.Distance.Between(
             this.tower.positionX,
             this.tower.positionY,
@@ -192,7 +190,7 @@ export default class Troop extends Phaser.GameObjects.Arc {
         );
 
         const isWithinTowerRange =
-            distance <= this.tower.range;
+            distance <= this.tower.troopRange;
 
         // O modo termina após a tentativa, mesmo se o destino for inválido.
         this.setCommandPointMoveMode(false);

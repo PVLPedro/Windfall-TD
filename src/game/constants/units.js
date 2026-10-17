@@ -1,0 +1,1 @@
+export const QUAD = 4; // 1 Quad = 4 Pixels

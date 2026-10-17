@@ -1,6 +1,7 @@
 export const enemyTypes = {
 
     goblin: {
+
         name: 'Goblin',
 
         health: 30,
@@ -21,6 +22,7 @@ export const enemyTypes = {
     },
 
     goblinArcher: {
+
         name: 'Goblin Arqueiro',
 
         health: 25,
@@ -49,6 +51,7 @@ export const enemyTypes = {
     },
 
     orc: {
+
         name: 'Orc',
 
         health: 80,
@@ -68,6 +71,7 @@ export const enemyTypes = {
     },
 
     wolf: {
+
         name: 'Lobo',
 
         health: 20,
@@ -87,6 +91,7 @@ export const enemyTypes = {
     },
 
     ogre: {
+        
         name: 'Ogro',
 
         health: 200,

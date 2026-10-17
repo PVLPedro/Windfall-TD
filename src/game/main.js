@@ -13,6 +13,11 @@ export default function StartGame(parent) {
         width: 1920,
         height: 1080,
 
+        // width: 640,
+        // height: 360,
+
+        // pixelArt: true,
+
         backgroundColor: '#423130',
         
         parent: parent,

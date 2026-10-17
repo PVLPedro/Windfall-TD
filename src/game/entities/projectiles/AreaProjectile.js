@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser';
 import Projectile from '../Projectile';
 
-export default class BombProjectile extends Projectile {
+export default class AreaProjectile extends Projectile {
 
     constructor(
         scene,
@@ -11,8 +11,9 @@ export default class BombProjectile extends Projectile {
         damage,
         speed,
         combatSystem,
-        explosionRadius,
+        radius,
         debuff,
+        falloff,
     ) {
 
         super(
@@ -25,8 +26,9 @@ export default class BombProjectile extends Projectile {
             combatSystem
         );
 
-        this.explosionRadius = explosionRadius;
+        this.radius = radius;
         this.debuff = debuff;
+        this.falloff = falloff;
 
         this.setFillStyle(0xff6600);
     }
@@ -79,7 +81,7 @@ export default class BombProjectile extends Projectile {
         const explosion = this.scene.add.circle(
             this.x,
             this.y,
-            this.explosionRadius,
+            this.radius,
             0xff6600,
             0.35
         );
@@ -102,9 +104,10 @@ export default class BombProjectile extends Projectile {
         this.combatSystem.dealAreaDamage(
             this.x,
             this.y,
-            this.explosionRadius,
+            this.radius,
             this.damage,
-            this.debuff
+            this.debuff,
+            this.falloff
         );
 
         this.destroy();

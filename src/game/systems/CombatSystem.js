@@ -40,7 +40,9 @@ export default class CombatSystem {
         );
     }
 
-    dealAreaDamage(x, y, radius, damage, debuff = null) {
+    // falloff: redução máxima de dano nas bordas da área (0.4 = até 40%).
+    // false/null = sem redução.
+    dealAreaDamage(x, y, radius, damage, debuff = null, falloff = false) {
 
         const baseDamage = this.rollDamage(damage);
 
@@ -63,10 +65,10 @@ export default class CombatSystem {
 
             let finalDamage = baseDamage;
 
-            if (damage.falloff) {
+            if (falloff) {
 
                 const damageMultiplier = Math.max(
-                    damage.falloff.minimum,
+                    1 - falloff,
                     1 - (distance / radius)
                 );
 
@@ -91,9 +93,9 @@ export default class CombatSystem {
 
         if (!debuff) return;
 
-        if (debuff.type == 'slow') {
+        if (debuff.type == 'slowdown') {
 
-            target.speed = (target.actualSpeed * debuff.value) / 100;
+            target.speed = target.actualSpeed * (1 - debuff.value);
 
             this.scene.time.delayedCall(
                 debuff.duration * 1000,

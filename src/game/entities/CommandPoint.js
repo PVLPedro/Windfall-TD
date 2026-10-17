@@ -1,6 +1,7 @@
 import * as Phaser from 'phaser';
 
 import Troop from './Troop';
+import { QUAD } from '../constants/units';
 
 export default class CommandPoint extends Phaser.GameObjects.Container {
 
@@ -24,7 +25,7 @@ export default class CommandPoint extends Phaser.GameObjects.Container {
         this.respawnTime = data.respawnTime ?? 10;
         this.respawnEvent = null;
         
-        this.detectionRange = data.interceptRange;
+        this.detectionRange = data.interceptRange * QUAD;
 
         this.troop = null;
 
@@ -68,14 +69,11 @@ export default class CommandPoint extends Phaser.GameObjects.Container {
         
         if (!this.active) return false;
 
-        // Atualiza a posição do Container e suas coordenadas.
         this.setPosition(x, y);
 
         this.commandX = x;
         this.commandY = y;
 
-        // Se a tropa estiver ociosa ou retornando,
-        // ela deverá retornar à nova posição.
         if (this.troop?.active) {
 
             this.troop.returnToCommandPoint();
@@ -105,20 +103,6 @@ export default class CommandPoint extends Phaser.GameObjects.Container {
         if (!this.scene.troops.includes(troop)) {
             this.scene.troops.push(troop);
         }
-
-        // troop.setInteractive(
-        //     new Phaser.Geom.Rectangle(0, 0, troop.width, troop.height),
-        //     Phaser.Geom.Rectangle.Contains
-        // );
-
-        // troop.on('pointerdown', () => {
-        //     const troopKey = this.troopData.id; 
-
-        //     this.scene.availableTroopsOfType[troopKey]++;
-            
-        //     this.destroy();
-        //     troop.destroy();
-        // });
     }
 
     handleTroopDeath(troop) {

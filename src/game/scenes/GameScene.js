@@ -30,7 +30,7 @@ export default class GameScene extends Phaser.Scene {
 
         this.load.image('nature', 'nature-icon.png');
         this.load.image('magic', 'magic-icon.png');
-        this.load.image('industrial', 'industrial-icon.png');
+        this.load.image('mecanism', 'mecanism-icon.png');
         this.load.image('alchemy', 'alchemy-icon.png');
         this.load.image('resistence', 'resistence-icon.png');
         this.load.image('mad', 'mad-icon.png');
@@ -50,9 +50,7 @@ export default class GameScene extends Phaser.Scene {
         this.width = this.scale.width;
         this.height = this.scale.height;
 
-        // =========================
         // CAMINHO
-        // =========================
 
         const W = this.scale.width;
         const H = this.scale.height;

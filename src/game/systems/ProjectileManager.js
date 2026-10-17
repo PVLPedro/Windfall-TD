@@ -1,5 +1,5 @@
 import Projectile from '../entities/Projectile';
-import BombProjectile from '../entities/projectiles/BombProjectile';
+import AreaProjectile from '../entities/projectiles/AreaProjectile';
 
 export default class ProjectileManager {
 
@@ -31,9 +31,9 @@ export default class ProjectileManager {
 
                 break;
 
-            case 'bomb':
+            case 'area':
 
-                projectile = new BombProjectile(
+                projectile = new AreaProjectile(
                     this.scene,
                     data.x,
                     data.y,
@@ -41,8 +41,9 @@ export default class ProjectileManager {
                     data.damage,
                     data.speed,
                     this.combatSystem,
-                    data.explosionRadius,
-                    data.debuff
+                    data.radius,
+                    data.debuff,
+                    data.falloff
                 );
 
                 break;

@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 
 import { troopTypes } from '../data/troops';
 import CommandPoint from './CommandPoint';
+import { QUAD } from '../constants/units';
 
 export default class Tower extends Phaser.GameObjects.Rectangle {
 
@@ -39,15 +40,33 @@ export default class Tower extends Phaser.GameObjects.Rectangle {
         this.projectileManager = projectileManager;
 
         this.cost = data.cost;
-        this.range = data.range;
-        this.damage = data.damage;
+
+        // Valores padrão: 0 ou false para o que não for declarado.
+        // Torres sem alcance de ataque (range 0) não precisam declarar dano e derivados.
+        // Alcances e velocidades vêm em quadrados e são convertidos para pixels aqui.
+        this.range = (data.range ?? 0) * QUAD;
+        this.troopRange = (data.troopRange ?? 0) * QUAD;
+
+        this.damage = data.damage ?? { min: 0, max: 0 };
+        this.damageType = data.damageType ?? false;
+
         this.attackCooldown = data.attackCooldown ?? 1;
 
-        this.debuff = data.debuff ?? false;
+        // Projétil: sem altura = teleguiado (height 0); sem falloff = false.
+        const projectile = data.projectile ?? {};
 
-        this.projectileType = data.projectileType ?? 'basic';
-        this.projectileSpeed = data.projectileSpeed ?? 120;
-        this.explosionRadius = data.explosionRadius ?? 0;
+        this.projectile = {
+            type: projectile.type ?? 'basic',
+            speed: (projectile.speed ?? 30) * QUAD,
+            height: (projectile.height ?? 0) * QUAD,
+            radius: (projectile.radius ?? 0) * QUAD,
+            falloff: projectile.falloff ?? false
+        };
+
+        // Efeito negativo: sem cumulative = false.
+        this.debuff = data.debuff
+            ? { ...data.debuff, cumulative: data.debuff.cumulative ?? false }
+            : false;
 
         this.troops = data.troops ?? false;
         this.commandPoints = [];
@@ -58,10 +77,11 @@ export default class Tower extends Phaser.GameObjects.Rectangle {
 
         scene.add.existing(this);
 
+        // Torres sem alcance de ataque mostram o alcance de tropa.
         this.rangeCircle = scene.add.circle(
             x,
             y,
-            this.range,
+            this.range || this.troopRange,
             this.color,
             0.03
         );
@@ -103,16 +123,27 @@ export default class Tower extends Phaser.GameObjects.Rectangle {
         
         this.detail.angle = 45;
 
-        this.attackEvent = scene.time.addEvent({
+        this.attackEvent = null;
 
-            delay: this.attackCooldown,
+        // Só cria o ciclo de ataque se a torre realmente ataca.
+        if (this.canAttack()) {
 
-            loop: true,
+            this.attackEvent = scene.time.addEvent({
 
-            callback: () => {
-                this.attack();
-            }
-        });
+                delay: this.attackCooldown * 1000,
+
+                loop: true,
+
+                callback: () => {
+                    this.attack();
+                }
+            });
+        }
+    }
+
+    canAttack() {
+
+        return this.range > 0 && this.damage.max > 0;
     }
 
     update() {
@@ -177,14 +208,17 @@ export default class Tower extends Phaser.GameObjects.Rectangle {
         }
 
         this.projectileManager.spawn(
-            this.projectileType,
+            this.projectile.type,
             {
                 x: this.x,
                 y: this.y,
                 target: this.target,
                 damage: this.damage,
-                speed: this.projectileSpeed,
-                explosionRadius: this.explosionRadius,
+                damageType: this.damageType,
+                speed: this.projectile.speed,
+                height: this.projectile.height,
+                radius: this.projectile.radius,
+                falloff: this.projectile.falloff,
                 debuff: this.debuff
             }
         );

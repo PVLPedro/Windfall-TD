@@ -1,18 +1,18 @@
 export const troopTypes = {
 
-    soldier: {
-        id: 'soldier',
-        name: 'Soldado',
+    militiaMember: {
+        
+        name: 'Miliciano',
 
-        health: 60,
-        speed: 180,
+        health: 40,
+        speed: 18,
 
         meleeDamage: {
             min: 1,
             max: 3,
         },
         meleeCooldown: 1,
-        interceptRange: 80,
+        interceptRange: 20,
 
         regeneration: 3,
         regenerationCooldown: 1,
@@ -25,20 +25,20 @@ export const troopTypes = {
         color: 0x3399ff,
     },
 
-    archer: {
-        id: 'archer',
-        name: 'Arqueiro',
+    slinger: {
+
+        name: 'Fundeiro',
 
         health: 35,
-        speed: 180,
+        speed: 18,
 
         meleeDamage: {
             min: 1,
-            max: 3,
+            max: 2,
         },
 
         meleeCooldown: 1,
-        interceptRange: 80,
+        interceptRange: 20,
 
         rangedDamage: {
             min: 6,
@@ -46,8 +46,8 @@ export const troopTypes = {
         },
 
         rangedCooldown: 1.2,
-        rangedRange: 110,
-        projectileSpeed: 300,
+        rangedRange: 28,
+        projectileSpeed: 75,
 
         regeneration: 2,
         regenerationCooldown: 1,
@@ -60,21 +60,29 @@ export const troopTypes = {
         color: 0x33ffff,
     },
 
-    // archer: {
-    //     name: 'Arqueiro',
+    troublemaker: {
 
-    //     health: 40,
-    //     moveSpeed: 150,
-    //     damage: {
-    //         min: 2,
-    //         max: 4
-    //     },
+        name: 'Barraqueiro',
 
-    //     attackRange: 110,
-    //     attackCooldown: 1.2,
+        health: 50,
+        speed: 18,
 
-    //     interceptRange: 80,
+        meleeDamage: {
+            min: 4,
+            max: 8,
+        },
 
-    //     color: 0x33cc66
-    // }
+        meleeCooldown: 1,
+        interceptRange: 20,
+
+        regeneration: 2,
+        regenerationCooldown: 1,
+        passiveRegeneration: false,
+
+        canRespawn: true,
+        respawnTime: 5,
+
+        size: 10,
+        color: 0x33ffff,
+    }
 };

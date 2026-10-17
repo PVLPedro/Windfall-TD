@@ -230,7 +230,7 @@ export default class GamePath {
         );
     }
 
-    // lane: -1 (esquerda), 0 (centro), 1 (direita).
+    // Lane: -1 (esquerda), 0 (centro), 1 (direita).
     getLanePosition(distance, lane = 0, laneSpacing = 12) {
         const point = this.getPointAtDistance(distance);
         const normal = this.getNormalAtDistance(distance);
